@@ -12,8 +12,13 @@ const ReviewResume = () => {
   const [content, setContent] = useState("");
   
   const { getToken } = useAuth();
-  const { user } = useUser();
-  const isPremium = user.has({ plan: 'Premium' });
+  const { user, isLoaded } = useUser();
+
+// Use ?. to prevent the app from crashing while Clerk is loading
+const isPremium = user?.has({ plan: 'premium' }) ?? false;
+
+// Return null or a loader if Clerk hasn't finished checking the session
+if (!isLoaded) return null;
       
     const onSubmitHandler = async(e)=>{
           e.preventDefault()
