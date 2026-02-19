@@ -4,7 +4,7 @@ import React,{useState} from 'react'
 import { Edit,Eraser,Hash, Scissors, Sparkles } from 'lucide-react'
 import axios from "../lib/axios";
 import toast from "react-hot-toast";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth, useUser } from "@clerk/clerk-react";
 const RemoveObject = () => {
   const [input , setInput] = useState('')
   const [object , setObject] = useState('')
@@ -12,9 +12,14 @@ const RemoveObject = () => {
     const [content, setContent] = useState("");
   
     const { getToken } = useAuth();
+    const { user } = useUser();
+    const isPremium = user?.publicMetadata?.plan === 'Premium';
 
   const onSubmitHandler = async(e)=>{
     e.preventDefault() ;
+    if (!isPremium) {
+      return toast.error('This is a premium feature. Please subscribe to the Premium plan to use it.')
+    }
     try {
         if (object.split(' ').length > 1) {
           return toast('Please enter only one object name')

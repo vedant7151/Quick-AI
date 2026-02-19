@@ -3,7 +3,7 @@ import React,{useState} from 'react'
 import { Edit,Eraser,FileText,Hash, Sparkles } from 'lucide-react'
 import axios from "../lib/axios";
 import toast from "react-hot-toast";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth, useUser } from "@clerk/clerk-react";
 import ReactMarkdown from 'react-markdown';
 
 const ReviewResume = () => {
@@ -12,9 +12,14 @@ const ReviewResume = () => {
   const [content, setContent] = useState("");
   
   const { getToken } = useAuth();
+  const { user } = useUser();
+  const isPremium = user?.publicMetadata?.plan === 'Premium';
       
     const onSubmitHandler = async(e)=>{
           e.preventDefault()
+          if (!isPremium) {
+            return toast.error('This is a premium feature. Please subscribe to the Premium plan to use it.')
+          }
           try {
         setLoading(true)
         const formData = new FormData()

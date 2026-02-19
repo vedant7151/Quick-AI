@@ -18,6 +18,7 @@ import { NavLink } from "react-router-dom";
 const Sidebar = ({ sidebar, setSidebar }) => {
   const { user } = useUser();
   const { signOut, openUserProfile } = useClerk();
+  const isPremium = user?.publicMetadata?.plan === 'Premium';
 
   const navItems = [
     { to: "/ai", label: "Dashboard", Icon: House },
@@ -72,10 +73,7 @@ const Sidebar = ({ sidebar, setSidebar }) => {
           <div>
             <h1 className="text-sm font-medium">{user.fullName}</h1>
             <p className="text-xs text-gray-500">
-              <Protect plan="premium" fallback="Free">
-                Premium
-              </Protect>
-              Plan
+              {isPremium ? 'Premium' : 'Free'} Plan
             </p>
           </div>
         </div>

@@ -2,17 +2,18 @@
 import React, { useEffect, useState } from 'react'
 import { dummyCreationData } from '../assets/assets'
 import { Gem, Sparkles } from 'lucide-react'
-import {Protect} from '@clerk/clerk-react'
 import CreationItem from '../components/CreationItem'
 import axios from "../lib/axios";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth, useUser } from "@clerk/clerk-react";
 import toast from 'react-hot-toast';
 
 const DashBoard = () => {
 
   const [creations , setCreations] = useState([])
   const [loading, setLoading] = useState(true);
-    const { getToken } = useAuth();
+  const { getToken } = useAuth();
+  const { user } = useUser();
+  const isPremium = user?.publicMetadata?.plan === 'Premium';
 
 
   const getDashboardData = async()=>{
@@ -59,7 +60,7 @@ const DashBoard = () => {
           <div className='text-slate-600 '>
             <p className='text-sm'>Active Plan</p>
             <h2 className='text-xl font-semibold'>
-              <Protect plan='Premium' fallback="Free">Premium</Protect>
+              {isPremium ? 'Premium' : 'Free'}
             </h2>
           </div>
           <div className='w-10 h-10 rounded-lg bg-gradient-to-br from-[#FF61C5] to-[#9E53EE] text-white flex justify-center items-center'>
