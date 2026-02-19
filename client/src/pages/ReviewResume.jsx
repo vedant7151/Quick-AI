@@ -13,7 +13,7 @@ const ReviewResume = () => {
   
   const { getToken } = useAuth();
   const { user } = useUser();
-  const isPremium = user?.publicMetadata?.plan === 'Premium';
+  const isPremium = user.has({ plan: 'Premium' });
       
     const onSubmitHandler = async(e)=>{
           e.preventDefault()
