@@ -6,46 +6,65 @@ import toast from "react-hot-toast";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import ReactMarkdown from 'react-markdown';
 
+// import { useAuth, useUser } from "@clerk/clerk-react";
+
 const ReviewResume = () => {
-  const [input , setInput] = useState('')
+  const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState("");
-  
-  const { getToken } = useAuth();
+
+  const { getToken, has, isLoaded: isAuthLoaded } = useAuth(); // ✅ has() is on useAuth in v5
   const { user, isLoaded } = useUser();
 
-// Use ?. to prevent the app from crashing while Clerk is loading
-const isPremium = user?.has({ plan: 'premium' }) ?? false;
+  if (!isLoaded || !isAuthLoaded) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <span className="w-6 h-6 rounded-full border-2 border-t-transparent border-[#00DA83] animate-spin"></span>
+      </div>
+    );
+  }
 
-// Return null or a loader if Clerk hasn't finished checking the session
-if (!isLoaded) return null;
-      
-    const onSubmitHandler = async(e)=>{
-          e.preventDefault()
-          if (!isPremium) {
-            return toast.error('This is a premium feature. Please subscribe to the Premium plan to use it.')
-          }
-          try {
-        setLoading(true)
-        const formData = new FormData()
-        formData.append('resume' , input)
+  // ✅ Correct way in Clerk v5
+  let isPremium = false;
+  try {
+    isPremium = has({ plan: 'premium' }) ?? false;
+    console.log('isPremium:', isPremium); // remove after fix confirmed
+  } catch (err) {
+    console.warn('Plan check failed:', err);
+  }
 
+  const onSubmitHandler = async (e) => {
+    e.preventDefault();
 
-
-      const {data} = await axios.post('/api/ai/resume-review' ,  formData, {headers:{Authorization : `Bearer ${await getToken()}`}})
-        if (data.success) {
-          setContent(data.content)
-        }
-        else{
-          toast.error(data.message)
-        }
-      } catch (error) {
-        console.log(error)
-        toast.error(error.message)
-      }
-      setLoading(false)
-          
+    if (!isPremium) {
+      toast.error('This is a premium feature. Please upgrade to the Premium plan.');
+      return;
     }
+
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append('resume', input);
+
+      const { data } = await axios.post('/api/ai/resume-review', formData, {
+        headers: { Authorization: `Bearer ${await getToken()}` }
+      });
+
+      if (data.success) {
+        setContent(data.content);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+
+    setLoading(false);
+  };
+
+
+
 
   return (
     <div className='h-full overflow-y-scroll p-6 flex items-start flex-wrap gap-4 text-slate-700 '>

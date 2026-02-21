@@ -4,10 +4,9 @@ import { Edit,Hash, Sparkles } from 'lucide-react'
 import axios from "../lib/axios";
 import toast from "react-hot-toast";
 import ReactMarkdown from 'react-markdown';
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth , useUser } from "@clerk/clerk-react";
 
 const BlogTitles = () => {
-
 
   const blogCategories = ['General','Technology','Health','Lifestyle','Travel','Food','Education','Finance','Entertainment']
   
@@ -17,9 +16,38 @@ const BlogTitles = () => {
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState("");
   
-  const { getToken } = useAuth();
+  const { getToken, has, isLoaded: isAuthLoaded } = useAuth(); 
+const { user, isLoaded } = useUser();
+
+
+
+  if (!isLoaded || !isAuthLoaded) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <span className="w-6 h-6 rounded-full border-2 border-t-transparent border-[#00DA83] animate-spin"></span>
+      </div>
+    );
+  }
+
+  let isPremium = false;
+  try {
+    isPremium = has({ plan: 'premium' }) ?? false;
+    console.log('isPremium:', isPremium); // remove after fix confirmed
+  } catch (err) {
+    console.warn('Plan check failed:', err);
+  }
+
+
   const onSubmitHandler = async(e)=>{
+    
+
       e.preventDefault()
+
+    //   if (!isPremium) {
+    //   toast.error('This is a premium feature. Please upgrade to the Premium plan.');
+    //   return;
+    // }
+
       try {
         setLoading(true)
         const prompt = `Generate a blog title for the keyword ${input} in the category ${selectedCategory}`

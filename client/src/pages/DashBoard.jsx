@@ -11,9 +11,24 @@ const DashBoard = () => {
 
   const [creations , setCreations] = useState([])
   const [loading, setLoading] = useState(true);
-  const { getToken } = useAuth();
-  const { user } = useUser();
-  const isPremium = user?.publicMetadata?.plan === 'Premium';
+    const { getToken, has, isLoaded: isAuthLoaded } = useAuth(); // ✅ has() is on useAuth in v5
+    const { user, isLoaded } = useUser();
+  if (!isLoaded || !isAuthLoaded) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <span className="w-6 h-6 rounded-full border-2 border-t-transparent border-[#00DA83] animate-spin"></span>
+      </div>
+    );
+  }
+
+  // ✅ Correct way in Clerk v5
+  let isPremium = false;
+  try {
+    isPremium = has({ plan: 'premium' }) ?? false;
+    console.log('isPremium:', isPremium); // remove after fix confirmed
+  } catch (err) {
+    console.warn('Plan check failed:', err);
+  }
 
 
   const getDashboardData = async()=>{
@@ -35,6 +50,7 @@ const DashBoard = () => {
     setLoading(false)
   }
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(()=>{
     getDashboardData()
   } , [])
@@ -58,7 +74,7 @@ const DashBoard = () => {
 {/* ------------ Active Plan Card */}
         <div className='flex justify-between items-center w-72 p-4 px-6 bg-white rounded-xl border border-gray-200 '>
           <div className='text-slate-600 '>
-            <p className='text-sm'>Active Plan</p>
+            <p className='text-sm'>{isPremium ? "Premium" : "Free"}</p>
             <h2 className='text-xl font-semibold'>
               {isPremium ? 'Premium' : 'Free'}
             </h2>

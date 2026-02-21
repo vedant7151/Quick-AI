@@ -14,9 +14,28 @@ const GenerateImages = () => {
     const [loading, setLoading] = useState(false);
     const [content, setContent] = useState("");
     
-    const { getToken } = useAuth();
-    const { user } = useUser();
-    const isPremium = user?.publicMetadata?.plan === 'Premium';
+  
+        const { getToken, has, isLoaded: isAuthLoaded } = useAuth(); // ✅ has() is on useAuth in v5
+        const { user, isLoaded } = useUser();
+
+
+      if (!isLoaded || !isAuthLoaded) {
+        return (
+          <div className="h-full flex items-center justify-center">
+            <span className="w-6 h-6 rounded-full border-2 border-t-transparent border-[#00DA83] animate-spin"></span>
+          </div>
+        );
+      }
+    
+      // ✅ Correct way in Clerk v5
+      let isPremium = false;
+      try {
+        isPremium = has({ plan: 'premium' }) ?? false;
+        console.log('isPremium:', isPremium); // remove after fix confirmed
+      } catch (err) {
+        console.warn('Plan check failed:', err);
+      }
+    
   
     const onSubmitHandler = async(e)=>{
       e.preventDefault()
